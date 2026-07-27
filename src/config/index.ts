@@ -195,7 +195,7 @@ const DEFAULT_SETTINGS: TempestSettings = {
   },
 
   opencode: {
-    baseUrl: 'https://api.opencode.ai/v1',
+    baseUrl: '',
     defaultModel: 'opencode/deepseek-v4-pro',
   },
 

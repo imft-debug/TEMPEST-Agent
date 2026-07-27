@@ -624,8 +624,9 @@ class OpenAIAdapter implements LLMProviderAdapter {
       throw new Error(validation.error);
     }
 
-    const baseUrl = this.config.baseUrl || 'https://api.openai.com/v1';
-    const url = `${baseUrl}/chat/completions`;
+    const baseUrl = this.config.baseUrl;
+    if (!baseUrl) throw new Error(`No baseUrl configured for provider '${this.config.provider}' — set it in UAC Settings or server config`);
+    const url = `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
 
     const requestBody: Record<string, unknown> = {
       model: this.config.model,

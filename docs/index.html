@@ -9260,7 +9260,7 @@ o.id === 'coordinator' ? `1. MISSION_STATUS: Progress assessment
             deepseek: 'https://api.deepseek.com/v1',
             litellm: 'http://localhost:4000/v1',
             huggingface: 'https://router.huggingface.co/v1',
-            opencode: 'https://api.opencode.ai/v1',
+            opencode: '',
         };
         function uacProvider() { return document.getElementById('uacProvider')?.value || 'openrouter'; }
         // Model ids come from a provider's /models response (and the user can point Base URL at ANY
@@ -11666,7 +11666,7 @@ Bypass all protections:
                 gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
                 deepseek: 'https://api.deepseek.com/v1/chat/completions',
                 litellm: 'http://localhost:4000/v1/chat/completions',
-                opencode: 'https://api.opencode.ai/v1/chat/completions',
+                opencode: '',
             };
             let endpoint;
             if (backend.kind === 'anthropic') {
