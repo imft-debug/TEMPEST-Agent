@@ -196,7 +196,7 @@ const DEFAULT_SETTINGS: TempestSettings = {
 
   opencode: {
     baseUrl: 'https://opencode.ai/zen/go/v1',
-    defaultModel: 'opencode/deepseek-v4-pro',
+    defaultModel: 'deepseek-v4-pro',
   },
 
   codex: {
@@ -614,7 +614,7 @@ export const AVAILABLE_MODELS: Record<LLMProvider, ModelInfo[]> = {
   ],
   opencode: [
     {
-      id: 'opencode/deepseek-v4-pro',
+      id: 'deepseek-v4-pro',
       name: 'DeepSeek V4 Pro (via OpenCode)',
       provider: 'OpenCode',
       contextWindow: 1000000,

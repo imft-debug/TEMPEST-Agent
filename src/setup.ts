@@ -291,7 +291,7 @@ async function setupHuggingFaceKey(): Promise<boolean> {
 async function setupOpenCodeKey(): Promise<boolean> {
   console.log('');
   showInfo('OpenCode is an OpenAI-compatible API provider.');
-  showInfo('Get your API key at: ' + chalk.underline('https://api.opencode.ai'));
+  showInfo('Get your API key at: ' + chalk.underline('https://opencode.ai'));
   console.log('');
 
   const { apiKey } = await inquirer.prompt([
@@ -314,7 +314,7 @@ async function setupOpenCodeKey(): Promise<boolean> {
   try {
     const llm = new LLMBackbone({
       provider: 'opencode',
-      model: 'opencode/deepseek-v4-pro',
+      model: 'deepseek-v4-pro',
       baseUrl: 'https://opencode.ai/zen/go/v1',
       apiKey,
       maxTokens: 10,
