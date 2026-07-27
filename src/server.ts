@@ -350,10 +350,10 @@ function createTempestCommandInstance(missionName: string, apiKey: string | unde
       model,
       apiKey,
       baseUrl: baseConfig.baseUrl,
-      // Only a LOCAL provider honors a per-request base URL (the operator's own
-      // llama.cpp / Ollama host). Never set it for cloud providers — that would
-      // let a request redirect a cloud call to an attacker-chosen endpoint.
-      ...(baseUrl && provider === 'local' ? { baseUrl } : {}),
+      // Honor a per-request base URL for local providers AND OpenAI-compatible
+      // cloud providers when the operator sets a custom endpoint via the web UI.
+      // The request body is only reachable from the local operator (loopback bind).
+      ...(baseUrl ? { baseUrl } : {}),
       maxTokens: 4096,
       temperature: 0.7,
     },
@@ -6832,21 +6832,25 @@ function resolveGeneralLLMConfig(provider: string | undefined, model: string | u
     };
   }
   const baseConfig = config.getLLMConfig(selectedProvider as any, model);
-  // A per-request base URL is honored ONLY for the local provider (the operator's own
-  // llama.cpp / Ollama host). For any cloud provider it is ignored — never let a request
-  // redirect a cloud call. A malformed/non-HTTP URL throws (callers already 400 on throw).
-  let localBaseUrl: string | null = null;
-  if (selectedProvider === 'local') {
+  // A per-request base URL is honored for the local provider AND for
+  // OpenAI-compatible cloud providers (openai, deepseek, xai, gemini, litellm,
+  // huggingface, opencode, openrouter, venice) when the operator provides a custom
+  // endpoint via the web UI. Always sanitized; non-HTTP throws 400.
+  const OPENAI_COMPATIBLE_PROVIDERS = ['local', 'openai', 'deepseek', 'xai', 'gemini', 'litellm', 'huggingface', 'openrouter', 'venice', 'opencode'];
+  let requestBaseUrl: string | null = null;
+  if (OPENAI_COMPATIBLE_PROVIDERS.includes(selectedProvider)) {
     const bu = sanitizeLocalBaseUrl(baseUrl);
     if (!bu.ok) throw new Error(bu.error);
-    localBaseUrl = bu.value;
+    requestBaseUrl = bu.value;
   }
-  // SECURITY: when a client picks the local base URL, never fall back to the
-  // server-configured key (TEMPEST_LOCAL_API_KEY / ZAI_API_KEY / ZHIPUAI_API_KEY —
-  // possibly a real cloud bearer). Only a client-supplied key reaches a client-chosen host.
-  const effectiveKey = (selectedProvider === 'local' && localBaseUrl)
+  // SECURITY: when a client provides a baseUrl AND an apiKey, only the
+  // client key is used — never forward a server-configured secret to a
+  // client-chosen destination.
+  const effectiveKey = (requestBaseUrl && selectedProvider !== 'local')
     ? (apiKey || undefined)
-    : (apiKey || baseConfig.apiKey);
+    : (selectedProvider === 'local' && requestBaseUrl)
+      ? (apiKey || undefined)
+      : (apiKey || baseConfig.apiKey);
   if (providerNeedsApiKey(selectedProvider) && !effectiveKey) {
     throw new Error('API key required — pass apiKey in body or configure on server');
   }
@@ -6855,9 +6859,8 @@ function resolveGeneralLLMConfig(provider: string | undefined, model: string | u
     model: model || baseConfig.model,
     apiKey: effectiveKey,
     baseUrl: baseConfig.baseUrl,
-    // Only override the configured URL for a local provider. Cloud providers keep
-    // their own provider URL and cannot be redirected by a request.
-    ...(selectedProvider === 'local' && localBaseUrl ? { baseUrl: localBaseUrl } : {}),
+    // Override with the operator's custom endpoint from the web UI.
+    ...(requestBaseUrl ? { baseUrl: requestBaseUrl } : {}),
     maxTokens: 8192,
     temperature: 0.4,
     timeout: readGeneralTimeoutEnv() ?? 300000, // General planning needs room (was a hardcoded 60s); override via env

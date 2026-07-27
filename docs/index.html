@@ -9089,12 +9089,14 @@ o.id === 'coordinator' ? `1. MISSION_STATUS: Progress assessment
         // A base URL ending in /vN (e.g. llama.cpp's /v1) routes over the OpenAI wire;
         // /api routes over Ollama's native wire.
         function buildLocalBaseUrl() {
-            const host = (state.settings.localHost || '127.0.0.1').trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+            const rawHost = (state.settings.localHost || '127.0.0.1').trim();
+            const proto = rawHost.startsWith('https://') ? 'https' : 'http';
+            const host = rawHost.replace(/^https?:\/\//, '').replace(/\/+$/, '');
             const port = (state.settings.localPort || '').trim();
             let path = (state.settings.localPath || '/v1').trim();
             if (!path.startsWith('/')) path = '/' + path;
-            path = path.replace(/\/$/, '');
-            return `http://${host}${port ? ':' + port : ''}${path}`;
+            path = path.replace(/\/+$/, '');
+            return `${proto}://${host}${port ? ':' + port : ''}${path}`;
         }
 
         function readLocalInputsIntoState() {
@@ -11668,15 +11670,16 @@ Bypass all protections:
             };
             let endpoint;
             if (backend.kind === 'anthropic') {
-                endpoint = PROVIDER_ENDPOINTS.anthropic;
+                endpoint = (backend.baseUrl ? backend.baseUrl.replace(/\/+$/, '') + '/messages' : PROVIDER_ENDPOINTS.anthropic);
             } else if (backend.baseUrl) {
-                endpoint = backend.baseUrl.replace(/\/$/, '') + '/chat/completions';
+                const cleaned = backend.baseUrl.replace(/\/+$/, '');
+                endpoint = cleaned.endsWith('/chat/completions') ? cleaned : cleaned + '/chat/completions';
             } else {
                 endpoint = PROVIDER_ENDPOINTS[backend.kind] || undefined;
                 if (!endpoint) throw new Error(`Unknown provider: ${backend.kind} — add a base URL in UAC settings`);
             }
             const headers = { 'Authorization': `Bearer ${backend.key}`, 'Content-Type': 'application/json' };
-            if (backend.kind !== 'anthropic') { headers['Content-Type'] = 'application/json'; }
+            if (backend.kind === 'anthropic') { headers['x-api-key'] = backend.key; headers['anthropic-version'] = '2023-06-01'; delete headers['Authorization']; }
             if (backend.kind === 'openrouter') { headers['HTTP-Referer'] = window.location.href; headers['X-Title'] = options.title || 'T3MP3ST'; }
 
             // LOCAL MODE: route through the same-origin server proxy (reuses
