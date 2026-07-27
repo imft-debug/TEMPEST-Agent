@@ -315,7 +315,7 @@ async function setupOpenCodeKey(): Promise<boolean> {
     const llm = new LLMBackbone({
       provider: 'opencode',
       model: 'opencode/deepseek-v4-pro',
-      baseUrl: 'https://api.opencode.ai/v1',
+      baseUrl: 'https://opencode.ai/zen/go/v1',
       apiKey,
       maxTokens: 10,
       temperature: 0,

@@ -195,7 +195,7 @@ const DEFAULT_SETTINGS: TempestSettings = {
   },
 
   opencode: {
-    baseUrl: '',
+    baseUrl: 'https://opencode.ai/zen/go/v1',
     defaultModel: 'opencode/deepseek-v4-pro',
   },
 
@@ -1232,7 +1232,7 @@ DEEPSEEK_API_KEY=
 # HUGGINGFACE_API_KEY / HUGGINGFACE_TOKEN are also accepted as aliases.
 HF_TOKEN=
 
-# OpenCode API Key
+# OpenCode API Key (OpenAI-compatible endpoint)
 # Get your key at: https://opencode.ai
 OPENCODE_API_KEY=
 
